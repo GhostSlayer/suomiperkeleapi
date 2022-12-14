@@ -18,7 +18,7 @@ client.connect({
 
 async function dataFetcher () {
   try {
-    const response = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=FFDE72ABACB4C3123F0FB05A55D513C3&steamid=76561198428478394`)
+    const response = await fetch(`https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${process.env.STEAM_KEY}&steamid=${process.env.STEAM_ID}`)
 
     const data = await response.json()
     const csgoData = data.response.games.find((data) => data.appid === 730)
