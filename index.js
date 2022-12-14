@@ -1,9 +1,8 @@
 require('dotenv').config()
-const express = require('express')
-const app = express()
+const fastify = require('fastify')({ logger: true })
 const port = process.env.PORT || 3000
 const { scheduleJob } = require('node-schedule');
-const cors = require('cors');
+const cors = require('@fastify/cors');
 
 const mysql = require('@drivet/database');
 const client = new mysql();
@@ -34,24 +33,30 @@ scheduleJob('0 10 * * *', () => {
   dataFetcher()
 })
 
-app.use(cors())
 
-app.get('/api/steam/csgo', async (req, res) => {
-  if (req.method !== 'GET') return res.status(405).json({ error: true, status: 405, message: 'The requested method is not allowed'})
+fastify.get('/api/steam/csgo', async (req, reply) => {
+  if (req.method !== 'GET') return reply.status(405).send({ error: true, status: 405, message: 'The requested method is not allowed'})
   
   try {
     const tunnit = await client.rowsQuery('SELECT datetime, hours FROM csgo ORDER BY hours DESC')
 
-    if (!tunnit.length) return res.status(403).json({ hours: 0, datetime: new Date(null) })
+    if (!tunnit.length) return reply.send({ hours: 0, datetime: new Date(null) })
 
-    res.send(tunnit[0])
+    reply.send(tunnit[0])
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: true, status: 500, message: 'Failed to fetch data from the database.'})
+    throw new Error(err)
 
   }
 })
 
-app.listen(port, () => {
-  console.log(`Listening: ${port}`)
-})
+const start = async () => {
+  try {
+    await fastify.register(cors)
+
+    await fastify.listen({ port: 3000 })
+  } catch (err) {
+    fastify.log.error(err)
+    process.exit(1)
+  }
+}
+start()
