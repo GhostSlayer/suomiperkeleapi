@@ -26,7 +26,7 @@ async function dataFetcher () {
     const hours = Math.floor(csgoData.playtime_forever / 60);
     await client.rowQuery('INSERT INTO csgo (datetime, hours) VALUES (?, ?)', [new Date(), hours])
   } catch (err) {
-    console.log('failed to fetch steam data')
+    console.log('Failed to run dataFetcher function', err)
   }
 }
 
@@ -37,9 +37,15 @@ scheduleJob('0 10 * * *', () => {
 app.use(cors())
 
 app.get('/api/steam/csgo', async (req, res) => {
-  const tunnit = await client.rowsQuery('SELECT datetime, hours FROM csgo ORDER BY hours DESC')
+  if (req.method !== 'GET') return res.status(405).json({ error: true, status: 405, message: 'The requested method is not allowed'})
+  try {
+    const tunnit = await client.rowsQuery('SELECT datetime, hours FROM csgo ORDER BY hours DESC')
+    console.log(tunnit)
+  } catch (err) {
+    res.status(500).json({ error: true, status: 500, message: 'Failed to fetch data from the database.'})
 
-  console.log(tunnit)
+  }
+
   res.send(tunnit[0])
 })
 
