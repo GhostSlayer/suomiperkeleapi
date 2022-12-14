@@ -38,15 +38,18 @@ app.use(cors())
 
 app.get('/api/steam/csgo', async (req, res) => {
   if (req.method !== 'GET') return res.status(405).json({ error: true, status: 405, message: 'The requested method is not allowed'})
+  
   try {
     const tunnit = await client.rowsQuery('SELECT datetime, hours FROM csgo ORDER BY hours DESC')
-    console.log(tunnit)
+
+    if (!tunnit.length) return res.status(403).json({ hours: 0, datetime: new Date(null) })
+
+    res.send(tunnit[0])
   } catch (err) {
+    console.error(err)
     res.status(500).json({ error: true, status: 500, message: 'Failed to fetch data from the database.'})
 
   }
-
-  res.send(tunnit[0])
 })
 
 app.listen(port, () => {
