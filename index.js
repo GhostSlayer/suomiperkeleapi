@@ -3,6 +3,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000
 const { scheduleJob } = require('node-schedule');
+const cors = require('cors');
 
 const mysql = require('@drivet/database');
 const client = new mysql();
@@ -32,6 +33,8 @@ async function dataFetcher () {
 scheduleJob('0 10 * * *', () => {
   dataFetcher()
 })
+
+app.use(cors())
 
 app.get('/api/steam/csgo', async (req, res) => {
   const tunnit = await client.rowsQuery('SELECT datetime, hours FROM csgo ORDER BY hours DESC')
