@@ -34,9 +34,7 @@ scheduleJob('0 10 * * *', () => {
 })
 
 
-fastify.get('/api/steam/csgo', async (req, reply) => {
-  if (req.method !== 'GET') return reply.status(405).send({ error: true, status: 405, message: 'The requested method is not allowed'})
-  
+fastify.get('/api/steam/csgo', async () => {
   try {
     const tunnit = await client.rowsQuery('SELECT datetime, hours FROM csgo ORDER BY hours DESC')
 
